@@ -1,4 +1,6 @@
 fastapi
 # requests if flask 
-# pip install fastapi[all] httpx
+# pip install 
+fastapi[all] 
+httpx
 
