@@ -3,4 +3,6 @@ fastapi
 # pip install 
 fastapi[all] 
 httpx
+uvicorn
+pydantic
 
