@@ -43,24 +43,24 @@ jobs:
     - name: Build and push core-fastapi-async
       uses: docker/build-push-action@v4
       with:
-        context: ./core-fastapi-async
-        file: ./core-fastapi-async/Dockerfile
+        context: ./000-core-fastapi-async
+        file: ./000-core-fastapi-async/Dockerfile
         push: true
-        tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/core-fastapi-async:latest
+        tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/000-core-fastapi-async:latest
     
     - name: Build and push flask-sync-scraper
       uses: docker/build-push-action@v4
       with:
-        context: ./flask-sync-scraper
-        file: ./flask-sync-scraper/Dockerfile
+        context: ./001-flask-sync-scraper
+        file: ./001-flask-sync-scraper/Dockerfile
         push: true
-        tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/flask-sync-scraper:latest
+        tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/001-flask-sync-scraper:latest
     
     - name: Build and push modular-fastapi-backend
       uses: docker/build-push-action@v4
       with:
-        context: ./modular-fastapi-backend
-        file: ./modular-fastapi-backend/Dockerfile
+        context: ./002-modular-fastapi-backend
+        file: ./002-modular-fastapi-backend/Dockerfile
         push: true
-        tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/modular-fastapi-backend:latest
+        tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/002-modular-fastapi-backend:latest
       continue-on-error: true
