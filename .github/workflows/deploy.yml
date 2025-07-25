@@ -1,0 +1,66 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+    
+    - name: Log in to Container Registry
+      uses: docker/login-action@v2
+      with:
+        registry: ${{ env.REGISTRY }}
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+    
+    - name: Extract metadata
+      id: meta
+      uses: docker/metadata-action@v4
+      with:
+        images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+        tags: |
+          type=ref,event=branch
+          type=ref,event=pr
+          type=semver,pattern={{version}}
+          type=semver,pattern={{major}}.{{minor}}
+          type=sha,prefix={{branch}}-
+    
+    # Build and push Docker images for each service
+    - name: Build and push core-fastapi-async
+      uses: docker/build-push-action@v4
+      with:
+        context: ./core-fastapi-async
+        file: ./core-fastapi-async/Dockerfile
+        push: true
+        tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/core-fastapi-async:latest
+    
+    - name: Build and push flask-sync-scraper
+      uses: docker/build-push-action@v4
+      with:
+        context: ./flask-sync-scraper
+        file: ./flask-sync-scraper/Dockerfile
+        push: true
+        tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/flask-sync-scraper:latest
+    
+    - name: Build and push modular-fastapi-backend
+      uses: docker/build-push-action@v4
+      with:
+        context: ./modular-fastapi-backend
+        file: ./modular-fastapi-backend/Dockerfile
+        push: true
+        tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/modular-fastapi-backend:latest
+      continue-on-error: true

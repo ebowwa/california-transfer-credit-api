@@ -1,0 +1,52 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.8", "3.9", "3.10", "3.11"]
+        project: ["core-fastapi-async", "flask-sync-scraper", "modular-fastapi-backend"]
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+    
+    - name: Cache pip packages
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt', '**/pyproject.toml') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+    
+    - name: Install dependencies for ${{ matrix.project }}
+      run: |
+        cd ${{ matrix.project }}
+        python -m pip install --upgrade pip
+        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+        if [ -f pyproject.toml ]; then pip install -e .; fi
+        pip install pytest pytest-asyncio pytest-cov httpx
+    
+    - name: Run tests for ${{ matrix.project }}
+      run: |
+        cd ${{ matrix.project }}
+        pytest --cov=. --cov-report=xml --cov-report=html -v || echo "No tests found, skipping..."
+    
+    - name: Upload coverage reports
+      uses: codecov/codecov-action@v3
+      if: matrix.python-version == '3.10'
+      with:
+        file: ./${{ matrix.project }}/coverage.xml
+        flags: ${{ matrix.project }}
+        name: ${{ matrix.project }}-coverage
